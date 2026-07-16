@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+worker/.dev.vars
+web/dist/
+
+# Secrets — never commit
+.env
+.env.local
+tools/.env
+**/.env
+**/.env.local
+
+# Build artifacts
+*.log
+.DS_Store
+
+# Generated media (large + reproducible)
+tools/format_*/
+tools/MASTER_PROMPTS.json
+
+.claude/
