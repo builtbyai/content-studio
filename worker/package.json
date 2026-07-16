@@ -1,0 +1,27 @@
+{
+  "name": "contentforge-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "typecheck": "tsc --noEmit",
+    "db:create": "wrangler d1 create contentforge-prod",
+    "db:migrate": "wrangler d1 migrations apply contentforge-prod --remote",
+    "db:migrate:local": "wrangler d1 migrations apply contentforge-prod --local",
+    "queue:create": "wrangler queues create contentforge-publish && wrangler queues create contentforge-publish-dlq",
+    "r2:create": "wrangler r2 bucket create contentforge-media"
+  },
+  "dependencies": {
+    "@google/genai": "^1.29.0",
+    "aws4fetch": "^1.0.20",
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260101.0",
+    "typescript": "~5.8.2",
+    "wrangler": "^3.95.0"
+  }
+}

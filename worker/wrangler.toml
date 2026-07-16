@@ -1,0 +1,98 @@
+name = "contentforge-api"
+main = "src/index.ts"
+compatibility_date = "2026-05-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Same-origin /api/* on the app hostname removes CORS surface entirely.
+routes = [
+  { pattern = "app.example.com/api/*", zone_name = "example.com" },
+]
+
+[observability]
+enabled = true
+
+# --- D1 ---
+[[d1_databases]]
+binding = "DB"
+database_name = "contentforge-prod"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+migrations_dir = "../infra/migrations"
+
+# --- R2 ---
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "contentforge-media"
+
+# --- Queue (publish jobs) ---
+[[queues.producers]]
+binding = "PUBLISH_QUEUE"
+queue = "contentforge-publish"
+
+[[queues.consumers]]
+queue = "contentforge-publish"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 5
+dead_letter_queue = "contentforge-publish-dlq"
+
+# --- Durable Object: per-user live status fan-out (SSE) ---
+[[durable_objects.bindings]]
+name = "SCHEDULE_ROOM"
+class_name = "ScheduleRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ScheduleRoom"]
+
+# --- Workers AI (for Node 14 quality review + safety classification) ---
+[ai]
+binding = "AI"
+
+# --- Vectorize indexes (Nodes 02, 18, 25) ---
+[[vectorize]]
+binding = "VEC_BRANDS"
+index_name = "contentforge-brands"
+
+[[vectorize]]
+binding = "VEC_COMPETITORS"
+index_name = "contentforge-competitors"
+
+[[vectorize]]
+binding = "VEC_LEADS"
+index_name = "contentforge-leads"
+
+# --- KV (lightweight cache for provider capabilities, brief presets, media meta) ---
+[[kv_namespaces]]
+binding = "CACHE"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# --- Cron: reconcile near-term scheduled posts every minute ---
+[triggers]
+crons = ["* * * * *"]
+
+# --- Vars (non-secret config) ---
+[vars]
+AI_GATEWAY_SLUG = "contentforge-ai"
+# Postiz is served on the same public hostname (UI + API). Per-route auth via
+# POSTIZ_API_KEY only; no CF Access service-token gating needed since the
+# Postiz public-api routes require the bearer key anyway.
+POSTIZ_API_BASE = "https://postiz.example.com/api"
+POSTIZ_PUBLIC_BASE = "https://postiz.example.com"
+APP_ORIGIN = "https://app.example.com"
+R2_PUBLIC_BASE = "https://app.example.com/api/r2"
+R2_ACCOUNT_ID = "REPLACE_WITH_YOUR_CF_ACCOUNT_ID"
+R2_BUCKET = "contentforge-media"
+GEMINI_MODEL = "gemini-2.5-flash"
+SESSION_TTL_HOURS = "168"
+
+# Secrets (set via `wrangler secret put`):
+#   GEMINI_API_KEY
+#   POSTIZ_API_KEY
+#   POSTIZ_WEBHOOK_SECRET
+#   R2_ACCESS_KEY_ID
+#   R2_SECRET_ACCESS_KEY
+#   CF_ACCESS_CLIENT_ID         (for service-token auth to Postiz tunnel)
+#   CF_ACCESS_CLIENT_SECRET
+#   SESSION_COOKIE_SECRET       (HMAC sign session ids)
+#   REPLICATE_API_TOKEN         (Replicate.com — video generation in Video Lab + Node 09)
+#   REPLICATE_WEBHOOK_SECRET    (optional — verifies async webhook callbacks)

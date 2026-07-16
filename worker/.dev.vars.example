@@ -1,0 +1,13 @@
+# Copy this to worker/.dev.vars (gitignored) for local `wrangler dev`.
+# Production: use `wrangler secret put <NAME>` instead — never commit real values.
+
+GEMINI_API_KEY=
+OPENAI_API_KEY=
+RUNWAY_API_KEY=
+POSTIZ_API_KEY=
+POSTIZ_WEBHOOK_SECRET=local-dev-secret-change-me
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+CF_ACCESS_CLIENT_ID=
+CF_ACCESS_CLIENT_SECRET=
+SESSION_COOKIE_SECRET=local-dev-only-please-rotate
